@@ -1,0 +1,137 @@
+---
+title: "ETF/Market Data Dashboard"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+<style type="text/css">
+  body{
+  font-size: 9pt;
+}
+</style>
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(rvest)
+library(dplyr)
+library(stringr)
+library(knitr)
+library(kableExtra)
+library(rvest)
+library(httr)
+library(dplyr)
+library(lubridate)
+library(stringr)
+library(magrittr)
+library(highcharter)
+library(timetk)
+library(readr)
+library(plotly)
+library(DT)
+library(RSelenium)
+library(tidyverse)
+library(jsonlite)
+library(ggthemes)
+library(ggplot2)
+library(xml2)
+library(data.table) 
+
+now <- Sys.time()
+today <- format(Sys.time(), "%Y.%m.%d.")
+```
+Major Indices
+===
+[Source](https://www.investing.com/)
+```{r}
+url1 = 'https://www.investing.com/indices/major-indices'
+data = GET(url1)
+data_tableI = data %>% read_html() %>% html_table()
+data_tableI[[1]] %>% select(Index, Last, `Chg. %`, Time) %>% datatable()
+
+```
+
+Major ETFs
+===
+[Source](https://www.investing.com/)
+```{r}
+url2 <- "https://www.investing.com/etfs/major-etfs"
+data = GET(url2)
+data_tableE = data %>% read_html() %>% html_table()
+data_tableE[[1]] %>% select(Name, Symbol, Last, `Chg. %`, `Vol.`) %>% datatable()
+```
+
+ETFs_Performance
+===
+[Source](https://www.investing.com/etfs/major-etfs)
+<br>
+Note: sorted by Performance
+<br>
+
+```{r}
+tabetf <-read.csv("tabetf.csv")
+colnames(tabetf)[5] <- "1 Month"
+colnames(tabetf)[8] <- "3 Years"
+
+tabetf  %>%  select(Name, Daily, "1 Month", YTD, "3 Years")%>% datatable()
+```
+
+ETFs Top 10 Weekly
+===
+Row {data-width=500}
+-----------------------------------------------------------------
+### Creation Weekly Top 10
+[Source](https://www.etf.com/etfanalytics/etf-fund-flows-tool)
+<br>
+```{r}
+tab1 <-read.csv("Topcreation.csv")
+colnames(tab1)[3] <- "Net Flow"
+tab1 %>%
+  ggplot(aes(x = reorder(Ticker,`Net Flow`), y = `Net Flow`, label=`Net Flow`)) + 
+  ggtitle("")+
+  geom_bar(stat = 'identity', fill='skyblue') +
+  geom_text(color = 'black', size = 3, hjust = -0.5) +
+  xlab("Ticker") +
+  ylab("(m USD)") +
+  coord_flip() + 
+  theme_classic()
+```
+
+Row {data-width=500}
+-----------------------------------------------------------------
+### Redemption Weekly Top 10
+```{r}
+tab2 <-read.csv("Topredemption.csv")
+colnames(tab2)[3] <- "Net Flow"
+
+tab2 %>% 
+  ggplot(aes(x = reorder(Ticker,`Net Flow`), y = `Net Flow`, label=`Net Flow`)) + 
+  ggtitle("")+
+  geom_bar(stat = 'identity', fill='skyblue') +
+  geom_text(color = 'black', size = 3, hjust = -0.5) +
+  xlab("Ticker") +
+  ylab("(m USD)") +
+  coord_flip() + 
+  theme_classic()
+```
+
+Shiller Cape index
+===
+[Source](https://www.multpl.com/)
+```{r}
+url = 'https://www.multpl.com/shiller-pe/table/by-month'
+data = GET(url)
+
+data_table = data %>% read_html() %>% html_table() %>% .[[1]]
+#head(data_table)
+
+data_table = data_table %>%
+  mutate(Date = as.Date(Date, format = "%B %d, %Y")) %>%
+  set_colnames(c('Date', 'Value')) %>%
+  tk_xts()
+
+highchart(type = 'stock') %>%
+  hc_add_series(data_table) %>%
+  hc_scrollbar(enabled = TRUE)
+
+```
