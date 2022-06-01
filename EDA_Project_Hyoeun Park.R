@@ -91,14 +91,16 @@ write_csv(tab1,"Topcreation.csv")
 
 #read csv
 tab1 <-read.csv("Topcreation.csv")
-colnames(tab1)[3] <- "Net Flow"
+colnames(tab1)[3] <- "NetFlow"
+tab1 <- tab1 %>% mutate(NetFlow=parse_number(NetFlow))
 tab1 %>%
-  ggplot(aes(x = reorder(Ticker,`Net Flow`), y = `Net Flow`, label=`Net Flow`)) + 
+  ggplot(aes(x = reorder(Ticker,NetFlow), y = NetFlow, label=NetFlow)) +
   ggtitle("Top 10 Creations")+
   geom_bar(stat = 'identity', fill='skyblue') +
   geom_text(color = 'black', size = 3, hjust = -0.5) +
   xlab("Ticker") +
   ylab("(m USD)") +
+  scale_y_continuous(limits = c(0, 5000))+
   coord_flip() + 
   theme_classic()
 ggsave("Top 10 creation weekly.png")
@@ -111,15 +113,17 @@ tab2 <- res %>%
 write_csv(tab2,"Topredemption.csv")
 
 tab2 <-read.csv("Topredemption.csv")
-colnames(tab2)[3] <- "Net Flow"
-
-tab2 %>% 
-  ggplot(aes(x = reorder(Ticker,`Net Flow`), y = `Net Flow`, label=`Net Flow`)) + 
+colnames(tab2)[3] <- "NetFlow"
+tab2 <- tab2 %>% mutate(NetFlow=readr::parse_number(NetFlow))
+x <-abs(tab3$NetFlow)
+tab3 %>% 
+  ggplot(aes(x = reorder(Ticker,x), y = x, label=x)) + 
   ggtitle("Top 10 Redemption")+
   geom_bar(stat = 'identity', fill='skyblue') +
   geom_text(color = 'black', size = 3, hjust = -0.5) +
   xlab("Ticker") +
   ylab("(m USD)") +
+  scale_y_continuous(limits = c(0, 1500))
   coord_flip() + 
   theme_classic()
 ggsave("Top 10 redemption weekly.png")
