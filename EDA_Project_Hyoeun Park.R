@@ -18,7 +18,7 @@ library(tableHTML)
 library(xml2)
 library(data.table) 
 
-#1, Shiller Cape index"
+#1, Shiller Cape index
 url = 'https://www.multpl.com/shiller-pe/table/by-month'
 data = GET(url)
 
@@ -114,7 +114,7 @@ write_csv(tab2,"Topredemption.csv")
 
 tab2 <-read.csv("Topredemption.csv")
 colnames(tab2)[3] <- "NetFlow"
-tab2 <- tab2 %>% mutate(NetFlow=readr::parse_number(NetFlow))
+tab2 <- tab2 %>% mutate(NetFlow=parse_number(NetFlow))
 x <-abs(tab3$NetFlow)
 tab3 %>% 
   ggplot(aes(x = reorder(Ticker,x), y = x, label=x)) + 
@@ -123,9 +123,7 @@ tab3 %>%
   geom_text(color = 'black', size = 3, hjust = -0.5) +
   xlab("Ticker") +
   ylab("(m USD)") +
-  scale_y_continuous(limits = c(0, 1500))
+  scale_y_continuous(limits = c(0, 1500))+
   coord_flip() + 
   theme_classic()
 ggsave("Top 10 redemption weekly.png")
-#조교님께 물을것, 축 설정. 왜 안되는지, reorder 왜 안되는지..)
-
